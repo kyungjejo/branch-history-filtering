@@ -1,0 +1,1 @@
+  MPKBr_1K         	 :     1.0000  MPKBr_10K         	 :     0.1000  MPKBr_100K         	 :     0.1100  MPKBr_1M         	 :     0.0240
