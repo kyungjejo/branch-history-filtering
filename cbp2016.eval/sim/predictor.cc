@@ -408,9 +408,10 @@ bool PREDICTOR::GetPrediction(UINT32 PC){
    //int histPtr = 0;
    //int phistPtr = 0;
    //int filteredHistPtr = 0;
+   UINT32 PCu = (PC & ((1 << LOG_BST) - 1));
 
-   if (bst_table[PC & ((1 << LOG_BST) - 1)].state != 3) {
-      pred = (bst_table[PC & ((1 << LOG_BST) - 1)].state == 1)?true:false;
+   if (bst_table[PCu].state != 3) {
+      pred = (bst_table[PCu].state == 1)?true:false;
    }
    else {
       int non_dup_consd = 0;
@@ -678,6 +679,7 @@ void  PREDICTOR::UpdatePredictor(UINT32 PC, OpType opType, bool resolveDir, bool
    //int histPtr = 0;
    //int phistPtr = 0;
    //int filteredHistPtr = 0;
+   UINT32 PCu = (PC & ((1 << LOG_BST) - 1));
 
 #ifdef LOOPPREDICTOR
    if (LVALID)
@@ -686,13 +688,13 @@ void  PREDICTOR::UpdatePredictor(UINT32 PC, OpType opType, bool resolveDir, bool
    loopupdate (PC, resolveDir, (prcpt_pred != resolveDir));	//update the loop predictor
 #endif
 
-   if (bst_table[PC & ((1 << LOG_BST) - 1)].state == 0) {
-      if (resolveDir == true) bst_table[PC & ((1 << LOG_BST) - 1)].state = 1;
-      else bst_table[PC & ((1 << LOG_BST) - 1)].state = 2;
+   if (bst_table[PCu].state == 0) {
+      if (resolveDir == true) bst_table[PCu].state = 1;
+      else bst_table[PCu].state = 2;
    }
-   else if (((bst_table[PC & ((1 << LOG_BST) - 1)].state == 1) || (bst_table[PC & ((1 << LOG_BST) - 1)].state == 2)) && (t != ((bst_table[PC & ((1 << LOG_BST) - 1)].state == 1)? true:false))) {
+   else if (((bst_table[PCu].state == 1) || (bst_table[PCu].state == 2)) && (t != ((bst_table[PCu].state == 1)? true:false))) {
       /*------ detect the current branch as Non-biased ------*/
-      bst_table[PC & ((1 << LOG_BST) - 1)].state = 3;
+      bst_table[PCu].state = 3;
 
       /*------ In the update phase, the predictor table indexes has been computed in the same way as done in the prediction proceude before ------*/
       UINT32 bias_widx = gen_bias_widx(PC, WT_REG);
@@ -906,7 +908,7 @@ void  PREDICTOR::UpdatePredictor(UINT32 PC, OpType opType, bool resolveDir, bool
          }
       }
    }
-   else if (((bst_table[PC & ((1 << LOG_BST) - 1)].state == 1) || (bst_table[PC & ((1 << LOG_BST) - 1)].state == 2)) && (t == ((bst_table[PC & ((1 << LOG_BST) - 1)].state == 1)? true:false))) {
+   else if (((bst_table[PCu].state == 1) || (bst_table[PCu].state == 2)) && (t == ((bst_table[PCu].state == 1)? true:false))) {
    }
    else if( (t != predDir) || (HTrain == true) ) 	//Training needed if threshold not exceeded or predict wrong
    {
@@ -933,7 +935,7 @@ void  PREDICTOR::UpdatePredictor(UINT32 PC, OpType opType, bool resolveDir, bool
    }
 
    // threshold adjusting 
-   if (bst_table[PC & ((1 << LOG_BST) - 1)].state == 3) {
+   if (bst_table[PCu].state == 3) {
       if(t != predDir) {
          TC++;
          if(TC==63) {
@@ -973,7 +975,7 @@ void  PREDICTOR::UpdatePredictor(UINT32 PC, OpType opType, bool resolveDir, bool
    }
 
    // If the current branch is "completely biased or stable" branch?
-   bool isStableBranch = (bst_table[PC & ((1 << LOG_BST) - 1)].state != 3)?true:false;
+   bool isStableBranch = (bst_table[PCu].state != 3)?true:false;
 
    /*----- Update unfiltered GHR and path history ------*/
    GHRHeadPtr--;
