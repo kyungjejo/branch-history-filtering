@@ -14,7 +14,7 @@ num_parallel_jobs=16
 
 # The following line will launch sims for all workloads when you run ./doit.sh (comment it if you dont want it to) 
 
-time ./runall.pl -s ../sim/predictor -w all -f  $num_parallel_jobs -d ../results/AWS_RESULTS_SEZNEC_EVAL
+time ./runall.pl -s ../sim/predictor -w all -f  $num_parallel_jobs -d ../results/result
 
 #./runall.pl -s ../sim/predictor -w temp -f  $num_parallel_jobs -d ../results/MYRESULTS
 
@@ -24,7 +24,7 @@ time ./runall.pl -s ../sim/predictor -w all -f  $num_parallel_jobs -d ../results
 # This scripts creates stats, after all the earlier jobs finish
 
 #./getdata.pl -w temp -d ../results/MYRESULTS
-./getdata.pl -w all -d ../results/AWS_RESULTS_SEZNEC_EVAL
+./getdata.pl -w all -d ../results/result
 
 # To compare MPKI numbers against GSHARE for the provided benchmarks , uncomment this line 
 # ./getdata.pl -w all -d ../results/MYRESULTS ../results/GSHARE.04KB  ../results/GSHARE.08KB ../results/GSHARE.16KB ../results/GSHARE.32KB

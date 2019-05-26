@@ -85,9 +85,15 @@ class bst_entry      //Branch Status table entry
     * 03 means -> Non-biased */
    public:
       int state;
+      int takenFreq;
+      int totalFreq;
+      bool biasFlag;
       bst_entry ()
       {
          state = 0;
+         takenFreq = 0;
+         totalFreq = 0;
+         biasFlag = true;
       }
 };
 #ifdef LOOPPREDICTOR
@@ -687,13 +693,23 @@ void  PREDICTOR::UpdatePredictor(UINT32 PC, OpType opType, bool resolveDir, bool
          ctrupdate (WITHLOOP, (predloop == resolveDir), 7);
    loopupdate (PC, resolveDir, (prcpt_pred != resolveDir));	//update the loop predictor
 #endif
-
-   if (bst_table[PCu].state == 0) {
-      if (resolveDir == true) bst_table[PCu].state = 1;
-      else bst_table[PCu].state = 2;
+   // Update frequency count.
+   if (resolveDir == true) {
+      bst_table[PCu].takenFreq++;
    }
-   else if (((bst_table[PCu].state == 1) || (bst_table[PCu].state == 2)) && (t != ((bst_table[PCu].state == 1)? true:false))) {
-      /*------ detect the current branch as Non-biased ------*/
+   bst_table[PCu].totalFreq++;
+
+   if (bst_table[PCu].takenFreq * 100 >= bst_table[PCu].totalFreq * 99){
+      bst_table[PCu].state = 1;
+      bst_table[PCu].biasFlag = true;
+   }
+   // Taken probability is less than 10%
+   else if (bst_table[PCu].takenFreq * 100 <= bst_table[PCu].totalFreq * 1){
+      bst_table[PCu].state = 2;
+      bst_table[PCu].biasFlag = true;
+   }
+   else if (bst_table[PCu].biasFlag == true) {
+      bst_table[PCu].biasFlag = false;
       bst_table[PCu].state = 3;
 
       /*------ In the update phase, the predictor table indexes has been computed in the same way as done in the prediction proceude before ------*/
@@ -907,8 +923,6 @@ void  PREDICTOR::UpdatePredictor(UINT32 PC, OpType opType, bool resolveDir, bool
             break;
          }
       }
-   }
-   else if (((bst_table[PCu].state == 1) || (bst_table[PCu].state == 2)) && (t == ((bst_table[PCu].state == 1)? true:false))) {
    }
    else if( (t != predDir) || (HTrain == true) ) 	//Training needed if threshold not exceeded or predict wrong
    {
