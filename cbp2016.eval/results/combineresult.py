@@ -18,9 +18,10 @@ def main():
 
 			with open("all/"+d+filename, "r") as file:
 				data = file.read()
+				data = data.replace("Edge sequence list access window overflow!", "")
 				data = re.sub(' +', ' ', data).replace("\t ", "").replace("\n", "").replace(" ", ":").split(":")
 				data = [x for x in data if x != '']
-				print(data)
+				#print(data)
 				for i in range(0, len(data), 2):
 					res[filename][d][data[i]] = data[i + 1]
 					if data[i] not in keylist:
