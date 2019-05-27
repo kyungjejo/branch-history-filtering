@@ -699,12 +699,12 @@ void  PREDICTOR::UpdatePredictor(UINT32 PC, OpType opType, bool resolveDir, bool
    }
    bst_table[PCu].totalFreq++;
 
-   if (bst_table[PCu].takenFreq * 100 >= bst_table[PCu].totalFreq * 99){
+   if (bst_table[PCu].takenFreq * 100 >= bst_table[PCu].totalFreq * 90){
       bst_table[PCu].state = 1;
       bst_table[PCu].biasFlag = true;
    }
    // Taken probability is less than 10%
-   else if (bst_table[PCu].takenFreq * 100 <= bst_table[PCu].totalFreq * 1){
+   else if (bst_table[PCu].takenFreq * 100 <= bst_table[PCu].totalFreq * 10){
       bst_table[PCu].state = 2;
       bst_table[PCu].biasFlag = true;
    }
