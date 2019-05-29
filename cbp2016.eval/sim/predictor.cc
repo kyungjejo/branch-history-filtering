@@ -85,8 +85,8 @@ class bst_entry      //Branch Status table entry
     * 03 means -> Non-biased */
    public:
       int state;
-      int takenFreq;
-      int totalFreq;
+      UINT64 takenFreq;
+      UINT64 totalFreq;
       bool biasFlag;
       bst_entry ()
       {
@@ -694,23 +694,23 @@ void  PREDICTOR::UpdatePredictor(UINT32 PC, OpType opType, bool resolveDir, bool
    loopupdate (PC, resolveDir, (prcpt_pred != resolveDir));	//update the loop predictor
 #endif
    // Update frequency count.
-   if (resolveDir == true) {
+   if (t == true) {
       bst_table[PCu].takenFreq++;
    }
    bst_table[PCu].totalFreq++;
 
-   if (bst_table[PCu].takenFreq * 100 >= bst_table[PCu].totalFreq * 90){
+   if (bst_table[PCu].takenFreq * 100 >= bst_table[PCu].totalFreq * 99 && bst_table[PCu].biasFlag == true){
       bst_table[PCu].state = 1;
-      bst_table[PCu].biasFlag = true;
+      //bst_table[PCu].biasFlag = true;
    }
    // Taken probability is less than 10%
-   else if (bst_table[PCu].takenFreq * 100 <= bst_table[PCu].totalFreq * 10){
+   else if (bst_table[PCu].takenFreq * 100 <= bst_table[PCu].totalFreq * 1 && bst_table[PCu].biasFlag == true){
       bst_table[PCu].state = 2;
-      bst_table[PCu].biasFlag = true;
+      //bst_table[PCu].biasFlag = true;
    }
    else if (bst_table[PCu].biasFlag == true) {
-      bst_table[PCu].biasFlag = false;
       bst_table[PCu].state = 3;
+      bst_table[PCu].biasFlag = false;
 
       /*------ In the update phase, the predictor table indexes has been computed in the same way as done in the prediction proceude before ------*/
       UINT32 bias_widx = gen_bias_widx(PC, WT_REG);
@@ -950,6 +950,7 @@ void  PREDICTOR::UpdatePredictor(UINT32 PC, OpType opType, bool resolveDir, bool
 
    // threshold adjusting 
    if (bst_table[PCu].state == 3) {
+   //if (bst_table[PCu].biasFlag == false) {
       if(t != predDir) {
          TC++;
          if(TC==63) {
@@ -990,6 +991,7 @@ void  PREDICTOR::UpdatePredictor(UINT32 PC, OpType opType, bool resolveDir, bool
 
    // If the current branch is "completely biased or stable" branch?
    bool isStableBranch = (bst_table[PCu].state != 3)?true:false;
+   //bool isStableBranch = bst_table[PCu].biasFlag;
 
    /*----- Update unfiltered GHR and path history ------*/
    GHRHeadPtr--;
@@ -1019,7 +1021,7 @@ void  PREDICTOR::UpdatePredictor(UINT32 PC, OpType opType, bool resolveDir, bool
    for(int j=0; j<WL_2; j++) {
       if (nonDupFilteredHA1[j] != 0) nonDupFilteredHADist1[j]++;
    }
-   //if the current branch is Non-baised, insert that into the Recency Stack (RS)
+   //if the current branch is Non-biased, insert that into the Recency Stack (RS)
    if (numFetchedCondBr >= REMOVE_DUP_DIST) {
       if (isBrStable[(PHISTHeadPtr+REMOVE_DUP_DIST)%PHIST] == false) {
          int j = 0;
@@ -1029,13 +1031,24 @@ void  PREDICTOR::UpdatePredictor(UINT32 PC, OpType opType, bool resolveDir, bool
          }
          for (int k = j-1; k>0; k--) {
             nonDupFilteredGHR1[k] = nonDupFilteredGHR1[k-1];
-            nonDupFilteredHA1[k]=nonDupFilteredHA1[k-1];
-            nonDupFilteredHADist1[k]=nonDupFilteredHADist1[k-1];
+            nonDupFilteredHA1[k] = nonDupFilteredHA1[k-1];
+            nonDupFilteredHADist1[k] = nonDupFilteredHADist1[k-1];
          }
          nonDupFilteredGHR1[0] = GHR[(GHRHeadPtr+REMOVE_DUP_DIST)%NFOLDED_HIST]?1:0;
-         nonDupFilteredHA1[0]=PA[(PHISTHeadPtr+REMOVE_DUP_DIST)%PHIST];
-         nonDupFilteredHADist1[0]=REMOVE_DUP_DIST + 1;
-      }
+         nonDupFilteredHA1[0] = PA[(PHISTHeadPtr+REMOVE_DUP_DIST)%PHIST];
+         nonDupFilteredHADist1[0] = REMOVE_DUP_DIST + 1;
+      }/*
+      else {
+        assert(false);
+         for (int k = j; k < WL_2; k++) {
+            nonDupFilteredGHR1[k-1] = nonDupFilteredGHR1[k];
+            nonDupFilteredHA1[k-1] = nonDupFilteredHA1[k];
+            nonDupFilteredHADist1[k-1] = nonDupFilteredHADist1[k];
+         }
+         nonDupFilteredGHR1[WL_2 - 1] = false;
+         nonDupFilteredHA1[WL_2 - 1] = 0;
+         nonDupFilteredHADist1[WL_2 - 1] = 0;
+      }*/
    }
 
    //Update retire path history for loop predictor

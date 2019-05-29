@@ -3,20 +3,19 @@ import re
 import csv
 
 def main():
-	#dirlist = ["100/", "99/", "95/", "90/"]
-	dirlist = ["90/"]
+	dirlist = ["100/", "99/"]#, "95/", "90/"]
 	keylist = []
 	res = dict()
 
 	for d in dirlist:
-		for filename in os.listdir("all/"+d):
+		for filename in os.listdir("final_"+d):
 			if filename == '.DS_Store':
 				continue
 			if filename not in res:
 				res[filename] = dict()
 			res[filename][d] = dict()
 
-			with open("all/"+d+filename, "r") as file:
+			with open("final_"+d+filename, "r") as file:
 				data = file.read()
 				data = data.replace("Edge sequence list access window overflow!", "")
 				data = re.sub(' +', ' ', data).replace("\t ", "").replace("\n", "").replace(" ", ":").split(":")
@@ -33,7 +32,7 @@ def main():
 									keylist.insert(j + 1, data[i])
 									break
 
-	with open("all_combined.csv", "w") as f:
+	with open("fin_combined.csv", "w") as f:
 		writer = csv.writer(f)
 		row = ["dir", "filename"]
 		row += keylist
